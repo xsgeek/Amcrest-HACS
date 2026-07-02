@@ -307,7 +307,8 @@
   mode: single
 - id: '1783010856419'
   alias: Main Portal Human Porch Light
-  description: Turn on the porch light when the AD410 detects a human, then turn it off two minutes after human detection clears.
+  description: Turn on the porch light when the AD410 detects a human, then turn it
+    off two minutes after human detection clears.
   triggers:
   - trigger: device
     domain: amcrest_ad410
@@ -343,3 +344,22 @@
           entity_id: switch.switchlinc_relay_dual_band_4b_f0_df
         data: {}
   mode: restart
+- id: '1783100000000'
+  alias: Main Portal Motion Tactical Beep
+  description: Play the tactical beep sequence on the AD410 speaker when motion is
+    detected for longer than 1 second.
+  triggers:
+  - entity_id:
+    - binary_sensor.main_portal_motion
+    for:
+      seconds: 1
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - action: amcrest_ad410.play_audio_on_doorbell
+    data:
+      duration: 30
+      media_content_id: media-source://media_source/local/tactical_beep_sequence.mp3
+      device_id: d85f23c6a0fedd4b469ad2bd39e4a557
+  mode: single
