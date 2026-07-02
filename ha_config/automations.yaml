@@ -1,0 +1,345 @@
+- id: '1671717806082'
+  alias: Bug Zapper Dawn
+  description: ''
+  triggers:
+  - event: sunrise
+    offset: 0
+    trigger: sun
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: de0aabd560d3c9704a230bd54d4d9fe2
+    entity_id: switch.on_off_module_51_bb_8d
+    domain: switch
+  mode: single
+- id: '1671717855214'
+  alias: Bug Zapper Dusk
+  description: ''
+  triggers:
+  - event: sunset
+    offset: 0
+    trigger: sun
+  conditions:
+  - condition: device
+    type: is_off
+    device_id: de0aabd560d3c9704a230bd54d4d9fe2
+    entity_id: switch.on_off_module_51_bb_8d
+    domain: switch
+  actions:
+  - type: turn_on
+    device_id: de0aabd560d3c9704a230bd54d4d9fe2
+    entity_id: switch.on_off_module_51_bb_8d
+    domain: switch
+  mode: single
+- id: '1767280662689'
+  alias: Dusk Routine
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: -00:30:00
+  conditions: []
+  actions:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      device_id: 7831c8c96de3424b457c13abb8ddb839
+    data: {}
+  - action: light.turn_on
+    metadata: {}
+    target:
+      device_id: afcb94a2cdb4e3d3f06c0f8ec12ca081
+    data: {}
+  - action: lifx.set_state
+    data:
+      power: true
+      brightness_pct: 100
+      rgb_color:
+      - 255
+      - 160
+      - 0
+    target:
+      entity_id:
+      - light.starboard
+      - light.port
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      device_id: 9cc9e6136be25a7c0cbda0025e252a7f
+    data: {}
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      device_id: de0aabd560d3c9704a230bd54d4d9fe2
+    data: {}
+  mode: single
+- id: '1767280730186'
+  alias: Dawn Routine
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunrise
+    offset: 00:15:00
+  conditions: []
+  actions:
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - light.port
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - light.starboard
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.switchlinc_relay_dual_band_4b_dd_d9
+    data: {}
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      device_id: de0aabd560d3c9704a230bd54d4d9fe2
+    data: {}
+  mode: single
+- id: '1768005880053'
+  alias: Shuttle Bay Open
+  description: ''
+  triggers:
+  - type: opened
+    device_id: 80b0a571e3a99c9dd6d908b8bdc7a421
+    entity_id: 43410e75b06b4bd1c048a2c68a4f24b3
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.hatchopened
+    data:
+      datetime: '{{ now().strftime(''%Y-%m-%d'') }}'
+  - action: lifx.set_state
+    target:
+      entity_id: light.port
+    data:
+      power: true
+      brightness_pct: 70
+      rgb_color:
+      - 255
+      - 0
+      - 40
+  - action: lifx.set_state
+    target:
+      entity_id: light.starboard
+    data:
+      power: true
+      brightness_pct: 70
+      rgb_color:
+      - 0
+      - 255
+      - 60
+  - action: script.hovercraft_docking
+    metadata: {}
+    data:
+      cycles: 10
+      period: 3
+      low_brightness: 25
+      high_brightness: 100
+      initial_brightness: 50
+      offset_seconds: 0
+      port_r: 255
+      port_g: 0
+      port_b: 40
+      starboard_r: 0
+      starboard_g: 255
+      starboard_b: 60
+      pre_pulse_transition: 1
+      post_pulse_transition: 1
+  mode: single
+- id: '1768006470972'
+  alias: Shuttle Bay Closed
+  description: ''
+  triggers:
+  - type: not_opened
+    device_id: 80b0a571e3a99c9dd6d908b8bdc7a421
+    entity_id: 43410e75b06b4bd1c048a2c68a4f24b3
+    domain: binary_sensor
+    trigger: device
+  conditions: []
+  actions:
+  - if:
+    - condition: sun
+      before: sunrise
+      after: sunset
+      after_offset: -00:35:00
+    then:
+    - action: lifx.set_state
+      target:
+        entity_id:
+        - light.port
+        - light.starboard
+      data:
+        power: true
+        brightness_pct: 100
+        rgb_color:
+        - 255
+        - 160
+        - 0
+    else:
+    - action: light.turn_off
+      metadata: {}
+      target:
+        entity_id:
+        - light.port
+        - light.starboard
+      data: {}
+  mode: single
+- id: '1768510416874'
+  alias: Check if Shuttlebay was left open
+  description: Auto‑closes Shuttlebay if Hatch open too long
+  triggers:
+  - trigger: time_pattern
+    minutes: /5
+    hours: '*'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.shuttlebay_door_wired_sensor
+    state:
+    - 'on'
+  - condition: template
+    value_template: '{{ hours_open_safe > 1 }}'
+  actions:
+  - device_id: 80b0a571e3a99c9dd6d908b8bdc7a421
+    domain: cover
+    entity_id: 970fa24fa83a5a0b280f8edbdd5a549e
+    type: close
+  mode: single
+  variables:
+    opened_at: '{{ states(''input_datetime.hatchopened'') }}'
+    opened_dt: '{{ as_datetime(opened_at) }}'
+    hours_open: '{{ (now() - opened_dt).total_seconds() / 3600 }}'
+    hours_open_safe: "{% if opened_dt is not none %}\n  {{ hours_open }}\n{% else
+      %}\n  0\n{% endif %}\n"
+- id: '1769828454084'
+  alias: Process Thermostat Status
+  description: ''
+  triggers: []
+  conditions: []
+  actions:
+  - action: climate.set_hvac_mode
+    metadata: {}
+    target:
+      device_id: dde5aad0ab849dfe704af9dcef8a3e15
+    data: {}
+  mode: single
+- id: '1771855395976'
+  alias: Check Shuttlebay Closed at Sunset
+  description: ''
+  triggers:
+  - trigger: sun
+    event: sunset
+    offset: 0
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.shuttlebay_door_wired_sensor
+    state:
+    - 'on'
+  actions:
+  - action: cover.close_cover
+    metadata: {}
+    target:
+      device_id: 80b0a571e3a99c9dd6d908b8bdc7a421
+    data: {}
+  mode: single
+- id: '1782746455818'
+  alias: Front Door Bell Pressed
+  description: ''
+  triggers:
+  - trigger: device
+    domain: amcrest_ad410
+    device_id: d85f23c6a0fedd4b469ad2bd39e4a557
+    type: doorbell_pressed
+  conditions:
+  - condition: time
+    after: 09:00:00
+    before: '19:00:00'
+  actions:
+  - action: tts.speak
+    metadata: {}
+    target:
+      entity_id: tts.home_assistant_cloud
+    data:
+      cache: true
+      media_player_entity_id: media_player.home_assistant_voice_0a44ae_media_player
+      message: There is someone at the door
+  - repeat:
+      count: 3
+      sequence:
+      - action: light.toggle
+        target:
+          device_id:
+          - ee5a18abcf3185a7f2cc12e5034da452
+          - d1592701c2b718e6f2000d82e6cc782d
+        data: {}
+      - action: switch.toggle
+        target:
+          device_id:
+          - c9e5b1b9c5c875ec00c35c25a992294f
+          - fd8e2f6a364c5985a10a64daf0f1521b
+        data: {}
+      - delay: 00:00:02
+      - action: light.toggle
+        target:
+          device_id:
+          - ee5a18abcf3185a7f2cc12e5034da452
+          - d1592701c2b718e6f2000d82e6cc782d
+        data: {}
+      - action: switch.toggle
+        target:
+          device_id:
+          - c9e5b1b9c5c875ec00c35c25a992294f
+          - fd8e2f6a364c5985a10a64daf0f1521b
+        data: {}
+      - delay: 00:00:02
+  mode: single
+- id: '1783010856419'
+  alias: Main Portal Human Porch Light
+  description: Turn on the porch light when the AD410 detects a human, then turn it off two minutes after human detection clears.
+  triggers:
+  - trigger: device
+    domain: amcrest_ad410
+    device_id: d85f23c6a0fedd4b469ad2bd39e4a557
+    type: human_detected
+    id: human_detected
+  - trigger: device
+    domain: amcrest_ad410
+    device_id: d85f23c6a0fedd4b469ad2bd39e4a557
+    type: human_cleared
+    id: human_cleared
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: human_detected
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.switchlinc_relay_dual_band_4b_f0_df
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: human_cleared
+      sequence:
+      - delay: 00:02:00
+      - condition: state
+        entity_id: binary_sensor.main_portal_human
+        state: 'off'
+      - action: switch.turn_off
+        target:
+          entity_id: switch.switchlinc_relay_dual_band_4b_f0_df
+        data: {}
+  mode: restart

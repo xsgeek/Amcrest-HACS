@@ -1,0 +1,592 @@
+hovercraft_docking:
+  alias: hovercraft_docking
+  mode: restart
+  fields:
+    cycles:
+      name: Pulse Cycles
+      description: Number of pulse cycles
+      selector:
+        number:
+          min: 1
+          max: 20
+          step: 1
+          mode: slider
+      default: 3
+    period:
+      name: Pulse Period (seconds)
+      description: Full pulse period
+      selector:
+        number:
+          min: 1
+          max: 30
+          step: 1
+          mode: slider
+      default: 10
+    low_brightness:
+      name: Low Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 50
+    high_brightness:
+      name: High Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 100
+    initial_brightness:
+      name: Initial Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 75
+    offset_seconds:
+      name: Pulse Offset (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 0.1
+          mode: slider
+      default: 0
+    port_r:
+      name: Port – Red
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 255
+    port_g:
+      name: Port – Green
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 0
+    port_b:
+      name: Port – Blue
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 40
+    starboard_r:
+      name: Starboard – Red
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 0
+    starboard_g:
+      name: Starboard – Green
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 255
+    starboard_b:
+      name: Starboard – Blue
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 60
+    pre_pulse_transition:
+      name: Pre‑Pulse Transition (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+          mode: slider
+      default: 2
+    post_pulse_transition:
+      name: Post‑Pulse Transition (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+          mode: slider
+      default: 2
+  variables:
+    port: light.port
+    starboard: light.starboard
+    cycles: '{{ cycles }}'
+    period: '{{ period }}'
+    low_brightness: '{{ low_brightness }}'
+    high_brightness: '{{ high_brightness }}'
+    initial_brightness: '{{ initial_brightness }}'
+    offset_seconds: '{{ offset_seconds }}'
+    port_r: '{{ port_r }}'
+    port_g: '{{ port_g }}'
+    port_b: '{{ port_b }}'
+    starboard_r: '{{ starboard_r }}'
+    starboard_g: '{{ starboard_g }}'
+    starboard_b: '{{ starboard_b }}'
+    pre_pulse_transition: '{{ pre_pulse_transition }}'
+    post_pulse_transition: '{{ post_pulse_transition }}'
+    half_period: '{{ (period / 2) | float }}'
+  sequence:
+  - variables:
+      port_was_on: '{{ is_state(port, ''on'') }}'
+      starboard_was_on: '{{ is_state(starboard, ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not port_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          power: 'on'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not starboard_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          power: 'on'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      rgb_color:
+      - '{{ port_r }}'
+      - '{{ port_g }}'
+      - '{{ port_b }}'
+      brightness_pct: '{{ initial_brightness }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      rgb_color:
+      - '{{ starboard_r }}'
+      - '{{ starboard_g }}'
+      - '{{ starboard_b }}'
+      brightness_pct: '{{ initial_brightness }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      brightness_pct: '{{ low_brightness }}'
+      transition: '{{ pre_pulse_transition }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      brightness_pct: '{{ high_brightness }}'
+      transition: '{{ pre_pulse_transition }}'
+  - delay:
+      seconds: '{{ pre_pulse_transition }}'
+  - repeat:
+      count: '{{ cycles }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          brightness_pct: '{{ high_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ offset_seconds }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          brightness_pct: '{{ low_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ half_period }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          brightness_pct: '{{ low_brightness }}'
+          transition: '{{ half_period }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          brightness_pct: '{{ high_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ half_period }}'
+  - action: lifx.set_state
+    target:
+      entity_id:
+      - '{{ port }}'
+      - '{{ starboard }}'
+    data:
+      brightness_pct: 70
+      transition: 2
+  - delay:
+      seconds: 2
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      power: 'on'
+      brightness_pct: 70
+      rgb_color:
+      - 255
+      - 160
+      - 0
+      transition: 2
+    enabled: false
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      power: 'on'
+      brightness_pct: 70
+      rgb_color:
+      - 255
+      - 160
+      - 0
+      transition: 2
+    enabled: false
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not port_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          power: 'off'
+    enabled: false
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not starboard_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          power: 'off'
+    enabled: false
+  description: ''
+'1768533635499':
+  sequence:
+  - variables:
+      port_was_on: '{{ is_state(port, ''on'') }}'
+      starboard_was_on: '{{ is_state(starboard, ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not port_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          power: 'on'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not starboard_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          power: 'on'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      rgb_color:
+      - '{{ port_r }}'
+      - '{{ port_g }}'
+      - '{{ port_b }}'
+      brightness_pct: '{{ initial_brightness }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      rgb_color:
+      - '{{ starboard_r }}'
+      - '{{ starboard_g }}'
+      - '{{ starboard_b }}'
+      brightness_pct: '{{ initial_brightness }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      brightness_pct: '{{ low_brightness }}'
+      transition: '{{ pre_pulse_transition }}'
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      brightness_pct: '{{ high_brightness }}'
+      transition: '{{ pre_pulse_transition }}'
+  - delay:
+      seconds: '{{ pre_pulse_transition }}'
+  - repeat:
+      count: '{{ cycles }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          brightness_pct: '{{ high_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ offset_seconds }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          brightness_pct: '{{ low_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ half_period }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          brightness_pct: '{{ low_brightness }}'
+          transition: '{{ half_period }}'
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          brightness_pct: '{{ high_brightness }}'
+          transition: '{{ half_period }}'
+      - delay:
+          seconds: '{{ half_period }}'
+  - action: lifx.set_state
+    target:
+      entity_id:
+      - '{{ port }}'
+      - '{{ starboard }}'
+    data:
+      brightness_pct: 70
+      transition: 2
+  - delay:
+      seconds: 2
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ port }}'
+    data:
+      power: 'on'
+      brightness_pct: 70
+      rgb_color:
+      - 255
+      - 0
+      - 40
+      transition: 2
+  - action: lifx.set_state
+    target:
+      entity_id: '{{ starboard }}'
+    data:
+      power: 'on'
+      brightness_pct: 70
+      rgb_color:
+      - 0
+      - 255
+      - 60
+      transition: 2
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not port_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ port }}'
+        data:
+          power: 'off'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not starboard_was_on }}'
+      sequence:
+      - action: lifx.set_state
+        target:
+          entity_id: '{{ starboard }}'
+        data:
+          power: 'off'
+  alias: hovercraft_docking_w
+  mode: restart
+  fields:
+    cycles:
+      name: Pulse Cycles
+      description: Number of pulse cycles
+      selector:
+        number:
+          min: 1
+          max: 20
+          step: 1
+          mode: slider
+      default: 3
+    period:
+      name: Pulse Period (seconds)
+      description: Full pulse period
+      selector:
+        number:
+          min: 1
+          max: 30
+          step: 1
+          mode: slider
+      default: 10
+    low_brightness:
+      name: Low Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 50
+    high_brightness:
+      name: High Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 100
+    initial_brightness:
+      name: Initial Brightness (%)
+      selector:
+        number:
+          min: 1
+          max: 100
+          step: 1
+          mode: slider
+      default: 75
+    offset_seconds:
+      name: Pulse Offset (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 0.1
+          mode: slider
+      default: 0
+    port_r:
+      name: Port – Red
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 255
+    port_g:
+      name: Port – Green
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 0
+    port_b:
+      name: Port – Blue
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 40
+    starboard_r:
+      name: Starboard – Red
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 0
+    starboard_g:
+      name: Starboard – Green
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 255
+    starboard_b:
+      name: Starboard – Blue
+      selector:
+        number:
+          min: 0
+          max: 255
+          step: 1
+      default: 60
+    pre_pulse_transition:
+      name: Pre‑Pulse Transition (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+          mode: slider
+      default: 2
+    post_pulse_transition:
+      name: Post‑Pulse Transition (seconds)
+      selector:
+        number:
+          min: 0
+          max: 10
+          step: 1
+          mode: slider
+      default: 2
+  variables:
+    port: light.port
+    starboard: light.starboard
+    cycles: '{{ cycles }}'
+    period: '{{ period }}'
+    low_brightness: '{{ low_brightness }}'
+    high_brightness: '{{ high_brightness }}'
+    initial_brightness: '{{ initial_brightness }}'
+    offset_seconds: '{{ offset_seconds }}'
+    port_r: '{{ port_r }}'
+    port_g: '{{ port_g }}'
+    port_b: '{{ port_b }}'
+    starboard_r: '{{ starboard_r }}'
+    starboard_g: '{{ starboard_g }}'
+    starboard_b: '{{ starboard_b }}'
+    pre_pulse_transition: '{{ pre_pulse_transition }}'
+    post_pulse_transition: '{{ post_pulse_transition }}'
+    half_period: '{{ (period / 2) | float }}'
+  description: ''
+update_thermostat_settings:
+  alias: update_thermostat_settings
+  mode: single
+  fields:
+    heat_to:
+      description: 'Keep it at least this warm:'
+    cool_to:
+      description: 'Keep it at least this cool:'
+  sequence:
+  - target:
+      entity_id: climate.my_thermostat
+    data:
+      target_temp_low: '{{ heat_to }}'
+      target_temp_high: '{{ cool_to }}'
+    action: climate.set_temperature
+  description: ''
