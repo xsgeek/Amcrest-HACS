@@ -1,0 +1,13 @@
+{
+  "domain": "amcrest_ad410",
+  "name": "Amcrest AD410 Doorbell",
+  "after_dependencies": ["media_source", "stream"],
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://github.com/xsgeek/Amcrest-HACS",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/xsgeek/Amcrest-HACS/issues",
+  "requirements": ["httpx>=0.28.0"],
+  "version": "0.1.0"
+}

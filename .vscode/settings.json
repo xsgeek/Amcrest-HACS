@@ -1,0 +1,13 @@
+{
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/custom_components"
+  ],
+  "python.defaultInterpreterPath": ".venv/Scripts/python.exe",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "editor.formatOnSave": true,
+  "ruff.enable": true
+}

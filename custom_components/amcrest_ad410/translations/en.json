@@ -1,0 +1,82 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Amcrest AD410 Doorbell",
+        "description": "Connect to the AD410 local HTTP API.",
+        "data": {
+          "name": "Name",
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "port": "HTTP port",
+          "rtsp_port": "RTSP port",
+          "use_ssl": "Use HTTPS",
+          "verify_ssl": "Verify SSL certificate",
+          "stream_subtype": "Default RTSP stream subtype"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the AD410.",
+      "invalid_auth": "The username or password was rejected.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This AD410 is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Amcrest AD410 options",
+        "description": "Event code defaults work for many AD410 firmware versions. If your doorbell firmware uses different event names, add them here as comma-separated values.",
+        "data": {
+          "doorbell_codes": "Doorbell event codes",
+          "motion_codes": "Motion event codes",
+          "human_codes": "Human event codes",
+          "speaker_endpoint": "Speaker CGI endpoint",
+          "speaker_content_type": "Speaker content type",
+          "ffmpeg_binary": "FFmpeg binary",
+          "max_audio_seconds": "Maximum speaker audio seconds",
+          "stream_subtype": "Default RTSP stream subtype"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "motion": {
+        "name": "Motion"
+      },
+      "human": {
+        "name": "Human"
+      }
+    },
+    "event": {
+      "doorbell": {
+        "name": "Doorbell"
+      },
+      "motion_event": {
+        "name": "Motion event"
+      },
+      "human_event": {
+        "name": "Human event"
+      }
+    },
+    "media_player": {
+      "speaker": {
+        "name": "Speaker"
+      }
+    }
+  },
+  "device_automation": {
+    "trigger_type": {
+      "doorbell_pressed": "Doorbell pressed",
+      "motion_detected": "Motion detected",
+      "motion_cleared": "Motion cleared",
+      "human_detected": "Human detected",
+      "human_cleared": "Human cleared"
+    }
+  }
+}

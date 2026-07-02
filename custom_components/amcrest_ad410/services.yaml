@@ -1,0 +1,77 @@
+play_microphone_stream:
+  name: Play microphone stream
+  description: Sends the AD410 RTSP camera/microphone stream to a Home Assistant media player.
+  fields:
+    device_id:
+      name: Doorbell device
+      description: The Amcrest AD410 device. Optional when only one AD410 is configured.
+      selector:
+        device:
+          integration: amcrest_ad410
+    entry_id:
+      name: Config entry ID
+      description: Advanced override for selecting a specific AD410 config entry.
+      advanced: true
+      selector:
+        text:
+    media_player_entity_id:
+      name: Media player
+      description: Media player entity that should receive the RTSP stream.
+      required: true
+      selector:
+        entity:
+          domain: media_player
+    media_content_type:
+      name: Media content type
+      description: Content type sent to media_player.play_media.
+      default: video
+      selector:
+        select:
+          options:
+            - video
+            - music
+    subtype:
+      name: Stream subtype
+      description: RTSP stream subtype, usually 0 for main stream and 1 for sub stream.
+      selector:
+        number:
+          min: 0
+          max: 2
+          mode: box
+
+play_audio_on_doorbell:
+  name: Play audio on doorbell
+  description: Converts a Home Assistant media source or URL to G.711 mu-law and posts it to the AD410 speaker endpoint.
+  fields:
+    device_id:
+      name: Doorbell device
+      description: The Amcrest AD410 device. Optional when only one AD410 is configured.
+      selector:
+        device:
+          integration: amcrest_ad410
+    entry_id:
+      name: Config entry ID
+      description: Advanced override for selecting a specific AD410 config entry.
+      advanced: true
+      selector:
+        text:
+    media_content_id:
+      name: Media
+      description: Media-source ID, URL, or file path readable by Home Assistant.
+      required: true
+      selector:
+        text:
+    media_content_type:
+      name: Media content type
+      description: Optional media type hint.
+      selector:
+        text:
+    duration:
+      name: Maximum duration
+      description: Maximum seconds of audio to send to the doorbell speaker.
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 300
+          mode: box

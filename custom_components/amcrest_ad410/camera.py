@@ -1,0 +1,62 @@
+"""Camera entity for the Amcrest AD410 integration."""
+
+from __future__ import annotations
+
+from homeassistant.components.camera import Camera
+try:
+    from homeassistant.components.camera import CameraEntityFeature
+except ImportError:  # pragma: no cover - older HA compatibility
+    CameraEntityFeature = None  # type: ignore[assignment]
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+from .runtime import AmcrestAD410Runtime
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up the AD410 camera."""
+
+    runtime: AmcrestAD410Runtime = entry.runtime_data
+    async_add_entities([AmcrestAD410Camera(runtime)])
+
+
+class AmcrestAD410Camera(Camera):
+    """Camera entity exposing AD410 RTSP and snapshots."""
+
+    _attr_has_entity_name = True
+    _attr_name = None
+    _attr_should_poll = False
+
+    if CameraEntityFeature is not None:
+        _attr_supported_features = CameraEntityFeature.STREAM
+
+    def __init__(self, runtime: AmcrestAD410Runtime) -> None:
+        """Initialize the camera."""
+
+        super().__init__()
+        self._runtime = runtime
+        self._attr_unique_id = f"{runtime.unique_id_base}_camera"
+        self._attr_device_info = runtime.entity_device_info
+
+    @property
+    def available(self) -> bool:
+        """Return whether the device is available."""
+
+        return self._runtime.available
+
+    async def stream_source(self) -> str:
+        """Return the RTSP stream source."""
+
+        return self._runtime.rtsp_url()
+
+    async def async_camera_image(
+        self, width: int | None = None, height: int | None = None
+    ) -> bytes | None:
+        """Return a still image from the camera."""
+
+        return await self._runtime.async_snapshot()
