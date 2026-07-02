@@ -1,0 +1,4 @@
+interface:
+  display_name: "On Screen"
+  short_description: "Open the last working file in VS Code"
+  default_prompt: "Use $on-screen to open the last working file in VS Code."
