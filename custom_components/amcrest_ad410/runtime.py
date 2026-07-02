@@ -278,6 +278,8 @@ class AmcrestAD410Runtime:
             resolved = await media_source.async_resolve_media(
                 self.hass, media_content_id, self.entry.entry_id
             )
+            if resolved.path is not None:
+                return str(resolved.path)
             url = resolved.url
             if url.startswith("/"):
                 base_url = get_url(

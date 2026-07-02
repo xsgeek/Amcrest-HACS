@@ -54,6 +54,9 @@ foreach ($target in $targets) {
         }
 
         if ((Get-Item -LiteralPath $liveItem).PSIsContainer) {
+            if (Test-Path -LiteralPath $repoItem) {
+                Remove-Item -LiteralPath $repoItem -Recurse -Force
+            }
             Copy-Item -LiteralPath $liveItem -Destination $repoItem -Recurse -Force
         } else {
             Copy-Item -LiteralPath $liveItem -Destination $repoItem -Force
@@ -66,6 +69,9 @@ foreach ($target in $targets) {
         }
 
         if ((Get-Item -LiteralPath $repoItem).PSIsContainer) {
+            if (Test-Path -LiteralPath $liveItem) {
+                Remove-Item -LiteralPath $liveItem -Recurse -Force
+            }
             Copy-Item -LiteralPath $repoItem -Destination $liveItem -Recurse -Force
         } else {
             Copy-Item -LiteralPath $repoItem -Destination $liveItem -Force
