@@ -41,16 +41,16 @@ Verified on 2026-07-02 from the development machine:
 - The latest inspected backup was `Automatic_backup_2026.2.2_2026-07-02_05.42_54001677.tar`. It contains `homeassistant.tar.gz`, whose config files are under `data/` inside the archive.
 - That backup's `backup.json` reports backup slug `e03c14a9`, Home Assistant version `2026.2.2`, date `2026-07-02T05:42:54.001677-04:00`, type `partial`, `homeassistant_included: true`, and database excluded.
 - Extracted backup config includes `data/.HA_VERSION`, `data/configuration.yaml`, `data/automations.yaml`, and `data/.storage/core.entity_registry`.
-- `\\192.168.1.250\HA-Staging\configuration.yaml` is byte-for-byte identical to the latest inspected 2026.2.2 backup's `data/configuration.yaml` (`SHA256 B59582CC9C4332959FBC87D9E81B4E41069EEE0BE5CD2076394DA973631FF9CE`).
-- `\\192.168.1.250\HA-Staging\automations.yaml` is byte-for-byte identical to the latest inspected 2026.2.2 backup's `data/automations.yaml` (`SHA256 44C4FF65D30895FD667438C90482AD5A7F6738179AC9CC7490AF8A4AB40A5D99`).
-- The active `configuration.yaml` still has the built-in `amcrest:` YAML block for host `192.168.1.179`, username `admin`, secret-backed password `!secret amcrest_ad410_password`, name `Front Portal`, `stream_source: rtsp`, and binary sensors `online` and `motion_detected`.
-- The active entity registry contains Amcrest entities `camera.front_portal`, `binary_sensor.front_portal_online`, and `binary_sensor.front_portal_motion_detected`, all with platform `amcrest` and no config entry. It also contains automation entity `automation.front_door_bell_pressed`.
-- The active `automations.yaml` references `binary_sensor.front_portal_motion_detected_2` in automation `Someone is on the porch` and listens for event type `amcrest` in automation `Front Door Bell Pressed`.
-- Home Assistant API/WebSocket verification on 2026-07-02 showed live state entities `camera.front_portal`, `binary_sensor.front_portal_online`, `binary_sensor.front_portal_motion_detected`, and `automation.front_door_bell_pressed`.
-- Home Assistant error log from the API on 2026-07-02 showed the built-in `homeassistant.components.amcrest` integration loading at startup.
+- Before the 2026-07-02 cleanup, `\\192.168.1.250\HA-Staging\configuration.yaml` and `automations.yaml` were byte-for-byte identical to the latest inspected 2026.2.2 backup.
+- On 2026-07-02, Codex removed the legacy built-in Home Assistant `amcrest:` YAML block for `192.168.1.179` / `Front Portal`, removed the old `Someone is on the porch` automation that referenced `binary_sensor.front_portal_motion_detected_2`, and removed the no-longer-used Amcrest secret key from active `secrets.yaml`.
+- The `Front Door Bell Pressed` automation was intentionally preserved for testing the new HACS integration event wiring. After cleanup it was present in active `automations.yaml` with `triggers: []`.
+- Cleanup backup files were saved at `\\192.168.1.250\HA-Staging\tmp_backups\codex_amcrest_cleanup_20260702_091758`.
+- Home Assistant was restarted through the API after cleanup. API status came back `RUNNING`, version `2026.2.2`, `safe_mode: false`.
+- WebSocket entity registry cleanup removed stale Amcrest entities `camera.front_portal`, `binary_sensor.front_portal_online`, and `binary_sensor.front_portal_motion_detected`.
+- Post-cleanup checks on 2026-07-02 found no `amcrest` or `front_portal` references in active `configuration.yaml` or `automations.yaml`, no matching live states, and no matching entity registry entries.
+- Current active file hashes after cleanup: `\\192.168.1.250\HA-Staging\configuration.yaml` SHA256 `8AE2A3A0253A9B58EEC0A358E6414DE9C018CB3F00C8E9564442E8324EAFC04A`; `\\192.168.1.250\HA-Staging\automations.yaml` SHA256 `E23B40AB3B32FCA71E2352C85A0649C1DB40144680872F7FE1C1C1AED5B32E88`.
 - Synology Drive is configured on the development machine with a local folder at `C:\Users\mh\Documents\SynologyDrive\HA-Staging`. The user says this syncs to a folder on the NAS filesystem.
-- `C:\Users\mh\Documents\SynologyDrive\HA-Staging\configuration.yaml` is byte-for-byte identical to the active NAS file and the latest inspected backup.
-- `C:\Users\mh\Documents\SynologyDrive\HA-Staging\automations.yaml` is not identical to the active NAS file; use the SMB path `\\192.168.1.250\HA-Staging` as the source of truth when files differ.
+- As of the 2026-07-02 cleanup, the local Synology Drive copies of `configuration.yaml` and `automations.yaml` match the active SMB files. Use the SMB path `\\192.168.1.250\HA-Staging` as the source of truth when files differ.
 
 Available local command-line options checked on 2026-07-02:
 
