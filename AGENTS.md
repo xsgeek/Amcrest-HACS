@@ -37,6 +37,10 @@ Verified on 2026-07-02 from the development machine:
 - `\\192.168.1.250\HA-Staging\.HA_VERSION` reads `2026.2.2`.
 - `\\192.168.1.250\HA-Staging` contains active runtime files including `.storage`, `configuration.yaml`, `automations.yaml`, `custom_components`, `home-assistant.log`, `home-assistant_v2.db`, `secrets.yaml`, `themes`, and `www`.
 - Live Home Assistant API at `http://192.168.1.250:8123/api/config` reports version `2026.2.2`, location `Toad Hall`, state `RUNNING`, time zone `America/New_York`, and `safe_mode: false`.
+- Live Home Assistant WebSocket `system_health/info` reports `core-2026.2.2`, installation type `Home Assistant Container`, Docker `true`, container architecture `amd64`, config directory `/config`, and Python runtime `3.13.11`.
+- Project dev dependencies intentionally pin Home Assistant to `homeassistant==2026.2.2` in `requirements-dev.txt` and the `pyproject.toml` dev extra so local editor analysis/tests match the deployed container version instead of the newer non-container package release.
+- The repo-local VS Code workspace setting uses `python.defaultInterpreterPath: ".venv/Scripts/python.exe"`. Keep global VS Code Python settings pointed at a general system interpreter; this workspace setting should select the project `.venv` only when this repo is open.
+- The project `.venv` was recreated on 2026-07-02 with local Python `3.13.14` via `py -3.13` to match the Home Assistant Container's Python 3.13 runtime family. The exact container patch version at verification time was Python `3.13.11`.
 - Fresh Home Assistant automatic backups are visible on the NAS at `\\192.168.1.250\docker\ha_backup_toad_hall`.
 - The latest inspected backup was `Automatic_backup_2026.2.2_2026-07-02_05.42_54001677.tar`. It contains `homeassistant.tar.gz`, whose config files are under `data/` inside the archive.
 - That backup's `backup.json` reports backup slug `e03c14a9`, Home Assistant version `2026.2.2`, date `2026-07-02T05:42:54.001677-04:00`, type `partial`, `homeassistant_included: true`, and database excluded.

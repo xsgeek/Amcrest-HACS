@@ -9,7 +9,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "homeassistant>=2025.10.0",
+  # Match the deployed Home Assistant Container version.
+  "homeassistant==2026.2.2",
   "pytest>=8.0",
   "ruff>=0.8.0",
 ]
