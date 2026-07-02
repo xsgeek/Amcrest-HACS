@@ -1,0 +1,29 @@
+- id: '1669413738408'
+  name: Library All Off
+  entities:
+    fan.library_fan:
+      preset_modes:
+      direction: forward
+      percentage: 0
+      percentage_step: 33.333333333333336
+      preset_mode:
+      icon: mdi:ceiling-fan
+      friendly_name: Library fan
+      supported_features: 5
+      state: 'off'
+    light.library_fan:
+      supported_color_modes:
+      - onoff
+      icon: mdi:ceiling-fan-light
+      friendly_name: Library light on Fan (Reversed Switch)
+      supported_features: 0
+      state: 'off'
+    button.library_fan_start_dimmer:
+      icon: mdi:brightness-percent
+      friendly_name: Library Fan Control Start Dimmer
+      state: unknown
+    button.library_fan_stop_actions:
+      icon: mdi:stop-circle-outline
+      friendly_name: Library Fan Control Stop Actions
+      state: '2022-11-25T22:00:21.786155+00:00'
+  metadata: {}

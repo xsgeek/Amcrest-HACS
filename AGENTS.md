@@ -1,4 +1,4 @@
-# Codex Project Notes
+# Agent Project Notes
 
 ## Local Home Assistant Environment
 
