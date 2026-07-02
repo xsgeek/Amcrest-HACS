@@ -6,8 +6,7 @@ from collections.abc import Callable
 from typing import Any
 
 import voluptuous as vol
-
-from homeassistant.components.device_automation import TRIGGER_BASE_SCHEMA
+from homeassistant.components.device_automation import DEVICE_TRIGGER_BASE_SCHEMA
 from homeassistant.components.homeassistant.triggers import event as event_trigger
 from homeassistant.const import CONF_DEVICE_ID, CONF_DOMAIN, CONF_PLATFORM, CONF_TYPE
 from homeassistant.core import HomeAssistant
@@ -16,7 +15,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, EVENT_AD410, TRIGGER_TYPES
 
-TRIGGER_SCHEMA = TRIGGER_BASE_SCHEMA.extend(
+TRIGGER_SCHEMA = DEVICE_TRIGGER_BASE_SCHEMA.extend(
     {vol.Required(CONF_TYPE): vol.In(TRIGGER_TYPES)}
 )
 
@@ -28,7 +27,9 @@ async def async_get_triggers(
 
     device_registry = dr.async_get(hass)
     device = device_registry.async_get(device_id)
-    if device is None or not any(identifier[0] == DOMAIN for identifier in device.identifiers):
+    if device is None or not any(
+        identifier[0] == DOMAIN for identifier in device.identifiers
+    ):
         return []
 
     return [
