@@ -4,15 +4,22 @@ from __future__ import annotations
 
 from typing import Any
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
 from homeassistant import config_entries
-from homeassistant.const import CONF_HOST, CONF_NAME, CONF_PASSWORD, CONF_PORT, CONF_USERNAME
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_NAME,
+    CONF_PASSWORD,
+    CONF_PORT,
+    CONF_USERNAME,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 
 from .api import AmcrestAD410Client, CannotConnect, InvalidAuth
 from .const import (
+    CONF_CAMERA_STREAMS,
     CONF_DOORBELL_CODES,
     CONF_FFMPEG_BINARY,
     CONF_HUMAN_CODES,
@@ -24,6 +31,7 @@ from .const import (
     CONF_STREAM_SUBTYPE,
     CONF_USE_SSL,
     CONF_VERIFY_SSL,
+    DEFAULT_CAMERA_STREAMS,
     DEFAULT_DOORBELL_CODES,
     DEFAULT_FFMPEG_BINARY,
     DEFAULT_HUMAN_CODES,
@@ -38,6 +46,11 @@ from .const import (
     DOMAIN,
 )
 from .event_parser import codes_to_csv
+from .stream_profiles import (
+    STREAM_PROFILE_OPTIONS,
+    normalize_stream_subtypes,
+    stream_subtypes_to_options,
+)
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
@@ -97,7 +110,9 @@ class AmcrestAD410ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured(
                     updates={CONF_HOST: user_input[CONF_HOST]}
                 )
-                title = user_input.get(CONF_NAME) or f"{DEFAULT_NAME} {user_input[CONF_HOST]}"
+                title = user_input.get(CONF_NAME) or (
+                    f"{DEFAULT_NAME} {user_input[CONF_HOST]}"
+                )
                 return self.async_create_entry(title=title, data=user_input)
 
         return self.async_show_form(
@@ -138,6 +153,20 @@ class AmcrestAD410OptionsFlow(config_entries.OptionsFlow):
             return self.async_create_entry(title="", data=user_input)
 
         options = self.config_entry.options
+        default_stream_subtype = int(
+            options.get(
+                CONF_STREAM_SUBTYPE,
+                self.config_entry.data.get(CONF_STREAM_SUBTYPE, DEFAULT_STREAM_SUBTYPE),
+            )
+        )
+        camera_streams = stream_subtypes_to_options(
+            normalize_stream_subtypes(
+                options.get(CONF_CAMERA_STREAMS),
+                [default_stream_subtype]
+                if default_stream_subtype >= 0
+                else DEFAULT_CAMERA_STREAMS,
+            )
+        )
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
@@ -191,6 +220,10 @@ class AmcrestAD410OptionsFlow(config_entries.OptionsFlow):
                             ),
                         ),
                     ): int,
+                    vol.Optional(
+                        CONF_CAMERA_STREAMS,
+                        default=camera_streams,
+                    ): cv.multi_select(STREAM_PROFILE_OPTIONS),
                 }
             ),
         )

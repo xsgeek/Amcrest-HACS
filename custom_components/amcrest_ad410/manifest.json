@@ -1,7 +1,8 @@
 {
   "domain": "amcrest_ad410",
   "name": "Amcrest AD410 Doorbell",
-  "after_dependencies": ["media_source", "stream"],
+  "dependencies": ["stream"],
+  "after_dependencies": ["media_source"],
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://github.com/xsgeek/Amcrest-HACS",

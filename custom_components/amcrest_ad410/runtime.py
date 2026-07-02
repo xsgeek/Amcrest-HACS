@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Iterable
 import logging
+from collections.abc import Iterable
+from contextlib import suppress
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -27,6 +28,7 @@ from .const import (
     ATTR_RAW,
     ATTR_SOURCE,
     ATTR_TYPE,
+    CONF_CAMERA_STREAMS,
     CONF_DOORBELL_CODES,
     CONF_FFMPEG_BINARY,
     CONF_HUMAN_CODES,
@@ -62,6 +64,7 @@ from .const import (
     STOP_ACTIONS,
 )
 from .event_parser import AmcrestEvent, csv_to_codes
+from .stream_profiles import normalize_stream_subtypes
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -114,7 +117,11 @@ class AmcrestAD410Runtime:
     def unique_id_base(self) -> str:
         """Return a stable unique-id base."""
 
-        return self.device_info.serial_number or self.entry.unique_id or self.entry.entry_id
+        return (
+            self.device_info.serial_number
+            or self.entry.unique_id
+            or self.entry.entry_id
+        )
 
     @property
     def entity_device_info(self) -> dict[str, Any]:
@@ -162,10 +169,8 @@ class AmcrestAD410Runtime:
         self._stopped.set()
         if self._event_task is not None:
             self._event_task.cancel()
-            try:
+            with suppress(asyncio.CancelledError):
                 await self._event_task
-            except asyncio.CancelledError:
-                pass
             self._event_task = None
         await self.client.async_close()
 
@@ -174,14 +179,32 @@ class AmcrestAD410Runtime:
 
         return await self.client.async_snapshot()
 
+    def default_stream_subtype(self) -> int:
+        """Return the RTSP subtype used by the primary camera entity."""
+
+        return int(
+            self.entry.options.get(
+                CONF_STREAM_SUBTYPE,
+                self.entry.data.get(CONF_STREAM_SUBTYPE, DEFAULT_STREAM_SUBTYPE),
+            )
+        )
+
+    def camera_stream_subtypes(self) -> list[int]:
+        """Return enabled camera stream subtypes with the default stream first."""
+
+        default_subtype = self.default_stream_subtype()
+        subtypes = normalize_stream_subtypes(
+            self.entry.options.get(CONF_CAMERA_STREAMS), [default_subtype]
+        )
+        if default_subtype in subtypes:
+            subtypes.remove(default_subtype)
+        return [default_subtype, *subtypes]
+
     def rtsp_url(self, subtype: int | None = None) -> str:
         """Return the configured RTSP stream URL."""
 
         if subtype is None:
-            subtype = self.entry.options.get(
-                CONF_STREAM_SUBTYPE,
-                self.entry.data.get(CONF_STREAM_SUBTYPE, DEFAULT_STREAM_SUBTYPE),
-            )
+            subtype = self.default_stream_subtype()
         return self.client.rtsp_url(subtype)
 
     async def async_play_microphone_stream(
@@ -214,7 +237,9 @@ class AmcrestAD410Runtime:
         """Convert a HA media source/URL and post it to the doorbell speaker."""
 
         media = await self._async_resolve_media(media_content_id, media_content_type)
-        ffmpeg_binary = self.entry.options.get(CONF_FFMPEG_BINARY, DEFAULT_FFMPEG_BINARY)
+        ffmpeg_binary = self.entry.options.get(
+            CONF_FFMPEG_BINARY, DEFAULT_FFMPEG_BINARY
+        )
         max_seconds = int(
             duration
             or self.entry.options.get(CONF_MAX_AUDIO_SECONDS, DEFAULT_MAX_AUDIO_SECONDS)
@@ -293,10 +318,8 @@ class AmcrestAD410Runtime:
                     delay,
                 )
 
-            try:
+            with suppress(TimeoutError):
                 await asyncio.wait_for(self._stopped.wait(), timeout=delay)
-            except asyncio.TimeoutError:
-                pass
             delay = min(delay * 2, 60)
 
     @callback
@@ -364,10 +387,14 @@ class AmcrestAD410Runtime:
         )
 
     def _motion_codes(self) -> list[str]:
-        return csv_to_codes(self.entry.options.get(CONF_MOTION_CODES), DEFAULT_MOTION_CODES)
+        return csv_to_codes(
+            self.entry.options.get(CONF_MOTION_CODES), DEFAULT_MOTION_CODES
+        )
 
     def _human_codes(self) -> list[str]:
-        return csv_to_codes(self.entry.options.get(CONF_HUMAN_CODES), DEFAULT_HUMAN_CODES)
+        return csv_to_codes(
+            self.entry.options.get(CONF_HUMAN_CODES), DEFAULT_HUMAN_CODES
+        )
 
 
 def _lower_codes(codes: Iterable[str]) -> set[str]:

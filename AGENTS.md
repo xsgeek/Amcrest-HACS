@@ -14,6 +14,16 @@ Unless the user says otherwise, assume Codex is running on the user's developmen
 - Home Assistant container host/config directory on the NAS filesystem: `/HA-Staging`.
 - Active Home Assistant files are available over SMB at `\\192.168.1.250\HA-Staging`.
 
+## Amcrest AD410 Doorbell
+
+- Doorbell host: `192.168.1.179`.
+- Doorbell username: `admin`. This username is not secret; do not store the password in tracked files.
+- Store doorbell connection details in the project-local `.secrets.json` under `amcrestAd410` with `host`, `username`, `password`, `port`, and `rtspPort`. The tracked `.secrets.example.json` shows the expected shape with placeholders.
+- Use HTTP port `80` for Amcrest/Dahua CGI calls with digest authentication.
+- Use RTSP port `554` for camera streams.
+- Verified on 2026-07-02: ports `80`, `554`, `5000`, and `37777` were reachable on `192.168.1.179`; HTTPS port `443` was closed.
+- Verified on 2026-07-02 through `/cgi-bin/magicBox.cgi`: device type `AD410`, hardware version `1.00`, software version `1.000.00AC002.0.R,build:2023-10-12`.
+
 ## GitHub Project Access
 
 - GitHub repository: `https://github.com/xsgeek/Amcrest-HACS`.

@@ -13,7 +13,7 @@ Custom HACS integration for the Amcrest AD410 video doorbell.
   - `human_detected`
   - `human_cleared`
 - Binary sensors for the latest known motion and human-detection state.
-- Camera entity with RTSP stream source and HTTP snapshot support.
+- Camera entity with RTSP stream source, HTTP snapshot support, and optional Main/Sub stream entities for dashboard cards.
 - Service to send the doorbell microphone/camera RTSP stream to a Home Assistant media player.
 - Best-effort speaker media player/service that converts media to raw G.711 mu-law and posts it to a configurable Dahua/Amcrest audio CGI endpoint.
 
@@ -44,9 +44,23 @@ Firmware revisions differ on event names. The defaults are intentionally broad:
 
 - Doorbell: `CallNoAnswered`, `DoorBell`, `AlarmLocal`, `VTOCall`, `BackKeyLight`
 - Motion: `VideoMotion`
-- Human: `SmartMotionHuman`, `HumanDetect`, `HumanBodyDetection`
+- Human: `SmartMotionHuman`, `HumanDetect`, `HumanBodyDetection`, `CrossRegionDetection`, `CrossLineDetection`
 
-If human detection is not emitted by your firmware, the human event entity and binary sensor will remain idle. Open the integration options to adjust event code lists.
+On the tested AD410 firmware, the local API exposes human detection through `VideoAnalyseRule[0][0]` with `Type=CrossRegionDetection` and `ObjectTypes[0]=Human`; the generic `SmartMotionDetect` config endpoint returned an error. If human detection is not emitted by your firmware, the human event entity and binary sensor will remain idle. Open the integration options to adjust event code lists.
+
+## Dashboard camera streams
+
+The integration exposes a primary camera entity for the configured default RTSP subtype. In integration options, use **Camera stream profiles** to expose additional camera entities for the AD410 Main stream (`subtype=0`), Sub stream (`subtype=1`), or Sub stream 2 (`subtype=2`).
+
+Those camera entities can be added to Home Assistant dashboard cards such as Picture Entity:
+
+```yaml
+type: picture-entity
+entity: camera.front_door
+camera_view: live
+```
+
+The implementation follows the Dahua-style RTSP pattern used by `rroller/dahua`: `/cam/realmonitor?channel=1&subtype=<n>`. Home Assistant's `stream` integration is loaded as a dependency so dashboard cards can request a browser-playable stream from the camera entity.
 
 ## Services
 

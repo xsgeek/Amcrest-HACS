@@ -11,6 +11,10 @@ dependencies = [
 dev = [
   # Match the deployed Home Assistant Container version.
   "homeassistant==2026.2.2",
+  # Match Home Assistant 2026.2.2 stream integration requirements.
+  "PyTurboJPEG==1.8.0",
+  "av==16.0.1",
+  "numpy==2.3.2",
   "pytest>=8.0",
   "ruff>=0.8.0",
 ]

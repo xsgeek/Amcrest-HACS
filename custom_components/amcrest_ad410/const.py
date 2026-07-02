@@ -23,11 +23,13 @@ CONF_SPEAKER_ENDPOINT = "speaker_endpoint"
 CONF_SPEAKER_CONTENT_TYPE = "speaker_content_type"
 CONF_FFMPEG_BINARY = "ffmpeg_binary"
 CONF_MAX_AUDIO_SECONDS = "max_audio_seconds"
+CONF_CAMERA_STREAMS = "camera_streams"
 
 DEFAULT_NAME = "Amcrest AD410"
 DEFAULT_PORT = 80
 DEFAULT_RTSP_PORT = 554
 DEFAULT_STREAM_SUBTYPE = 0
+DEFAULT_CAMERA_STREAMS = ["0"]
 DEFAULT_FFMPEG_BINARY = "ffmpeg"
 DEFAULT_MAX_AUDIO_SECONDS = 30
 
@@ -39,7 +41,13 @@ DEFAULT_DOORBELL_CODES = [
     "BackKeyLight",
 ]
 DEFAULT_MOTION_CODES = ["VideoMotion"]
-DEFAULT_HUMAN_CODES = ["SmartMotionHuman", "HumanDetect", "HumanBodyDetection"]
+DEFAULT_HUMAN_CODES = [
+    "SmartMotionHuman",
+    "HumanDetect",
+    "HumanBodyDetection",
+    "CrossRegionDetection",
+    "CrossLineDetection",
+]
 DEFAULT_EVENT_CODES = sorted(
     set(DEFAULT_DOORBELL_CODES + DEFAULT_MOTION_CODES + DEFAULT_HUMAN_CODES)
 )

@@ -30,7 +30,7 @@
     "step": {
       "init": {
         "title": "Amcrest AD410 options",
-        "description": "Event code defaults work for many AD410 firmware versions. If your doorbell firmware uses different event names, add them here as comma-separated values.",
+        "description": "Event code defaults work for many AD410 firmware versions. If your doorbell firmware uses different event names, add them here as comma-separated values. Camera stream profiles expose additional RTSP subtypes as dashboard-card camera entities.",
         "data": {
           "doorbell_codes": "Doorbell event codes",
           "motion_codes": "Motion event codes",
@@ -39,7 +39,8 @@
           "speaker_content_type": "Speaker content type",
           "ffmpeg_binary": "FFmpeg binary",
           "max_audio_seconds": "Maximum speaker audio seconds",
-          "stream_subtype": "Default RTSP stream subtype"
+          "stream_subtype": "Default RTSP stream subtype",
+          "camera_streams": "Camera stream profiles"
         }
       }
     }
