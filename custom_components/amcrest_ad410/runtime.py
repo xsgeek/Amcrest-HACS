@@ -159,7 +159,8 @@ class AmcrestAD410Runtime:
 
         self._stopped.clear()
         if self._event_task is None or self._event_task.done():
-            self._event_task = self.hass.async_create_task(
+            self._event_task = self.entry.async_create_background_task(
+                self.hass,
                 self._async_event_loop(), name=f"{DOMAIN}_{self.entry.entry_id}_events"
             )
 

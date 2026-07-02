@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import AsyncIterator, Iterable
 from dataclasses import dataclass
-import logging
 from typing import Any
 from urllib.parse import quote, urlencode, urlsplit, urlunsplit
 
@@ -28,6 +28,7 @@ from .event_parser import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
 
 class AmcrestAD410Error(Exception):
     """Base error for the integration."""
@@ -163,7 +164,11 @@ class AmcrestAD410Client:
         """Yield events from eventManager.cgi."""
 
         code_list = list(codes or DEFAULT_EVENT_CODES)
-        params = {"action": "attach", "codes": f"[{','.join(code_list)}]"}
+        params = {
+            "action": "attach",
+            "codes": f"[{','.join(code_list)}]",
+            "heartbeat": 5,
+        }
         buffer = ""
 
         try:
@@ -206,7 +211,7 @@ class AmcrestAD410Client:
             params=params,
             content=audio,
             headers={"Content-Type": content_type},
-            timeout=httpx.Timeout(60.0, connect=8.0, read=60.0),
+            request_timeout=httpx.Timeout(60.0, connect=8.0, read=60.0),
         )
         text = response.text.strip() if response.content else ""
         if text and "error" in text.lower():
@@ -267,7 +272,7 @@ class AmcrestAD410Client:
         params: dict[str, Any] | None = None,
         content: bytes | None = None,
         headers: dict[str, str] | None = None,
-        timeout: httpx.Timeout | None = None,
+        request_timeout: httpx.Timeout | None = None,
     ) -> httpx.Response:
         """Run an authenticated request and normalize common errors."""
 
@@ -278,7 +283,7 @@ class AmcrestAD410Client:
                 params=params,
                 content=content,
                 headers=headers,
-                timeout=timeout,
+                timeout=request_timeout,
             )
         except httpx.ConnectError as err:
             raise CannotConnect(str(err)) from err
